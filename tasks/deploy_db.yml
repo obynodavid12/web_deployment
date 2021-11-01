@@ -1,0 +1,39 @@
+    - name: Install MySQL database
+      apt: name={{ item }} state=present
+      with_items:
+        - mysql-server
+        - mysql-client
+
+    - name: Start MySQL Service                     
+      service: name= "{{ item }}" state=started enabled=yes
+      with_items:
+        - mysql
+     
+    - name: Installing Pip
+      apt:
+        name: python3-pip
+        update_cache: yes        
+        state: present
+  
+    - name: Install mysql-python package
+      become: yes
+      pip:
+        name: pymysql
+        state: present
+
+
+    - name: Create Application Database
+      mysql_db: 
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+        name: "{{ db_name }}"                                  
+        state: present
+
+
+    - name: Create Database user
+      mysql_user:
+        name: "{{ db_user }}"
+        password: "{{ db_user_password }}"
+        priv: '*.*:ALL'
+        state: present
+        host: '%'
+        login_unix_socket: /var/run/mysqld/mysqld.sock
